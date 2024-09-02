@@ -34,20 +34,23 @@ export async function POST(req: Request) {
 
     console.log("Relevant notes found: ", relevantNotes);
 
-    const systemMessage: ChatCompletionMessage = {
-      role: "system",
-      content:
-        "You are an intelligent note-taking app. You answer the user's question based on their existing notes. " +
-        "The relevant notes for this query are:\n" +
-        relevantNotes
-          .map((note) => `Title: ${note.title}\n\nContent:\n${note.content}`)
-          .join("\n\n"),
-    };
+    // const openai = new OpenAI();
 
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       stream: true,
-      messages: [systemMessage, ...messagesTruncated],
+      messages: [
+        {
+          role: "user",
+          content: `System: You are an intelligent note-taking app. You answer the user's question based on their existing notes. The relevant notes for this query are:\n
+${relevantNotes
+  .map((note) => `Title: ${note.title}\n\nContent:\n${note.content}`)
+  .join("\n\n")}
+
+User: ${messagesTruncated[0].content}`,
+        },
+        ...messagesTruncated.slice(1),
+      ],
     });
 
     const stream = OpenAIStream(response);
