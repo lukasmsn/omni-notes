@@ -34,8 +34,6 @@ export async function POST(req: Request) {
 
     console.log("Relevant notes found: ", relevantNotes);
 
-    // const openai = new OpenAI();
-
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       stream: true,
@@ -56,7 +54,7 @@ User: ${messagesTruncated[0].content}`,
     const stream = OpenAIStream(response);
     return new StreamingTextResponse(stream);
   } catch (error) {
-    console.error(error);
+    console.error("Error in /api/chat route:", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
